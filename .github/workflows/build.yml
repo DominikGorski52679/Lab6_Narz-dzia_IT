@@ -1,0 +1,42 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - master
+  schedule:
+    - cron: '0 0 * * 0' # Runs every Sunday at midnight
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+      shell: pwsh
+
+    - name: Run installResources.ps1
+      run: .\installResources.ps1
+      shell: pwsh
+
+    - name: Create executable
+      run: pyinstaller --onefile your_script.py
+      shell: cmd
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: my-executable
+        path: dist/your_script.exe
